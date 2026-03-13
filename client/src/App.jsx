@@ -58,9 +58,9 @@ export default function App() {
             Name
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </label>
-          <p className="hint">
+          {/* <p className="hint">
             Admin login name is <strong>{adminLogin}</strong>. Any other name logs in as user.
-          </p>
+          </p> */}
           <button className="primary" onClick={handleJoin}>
             Join Chat
           </button>

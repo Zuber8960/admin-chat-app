@@ -52,21 +52,16 @@ export default function App() {
     return (
       <div className="page">
         <div className="card">
-          <h1>User Chat</h1>
-          <p className="muted">The best chat app to chat with Zeeshan</p>
+          <h1>Swift Talk 🚀</h1>
+          <p className="muted">Fast, focused conversations that keep teams aligned.</p>
           <label className="field">
             Name
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </label>
-          {/* <p className="hint">
-            Admin login name is <strong>{adminLogin}</strong>. Any other name logs in as user.
-          </p> */}
+          <p className="hint">Simple, fast, and focused: no group noise, just the right people.</p>
           <button className="primary" onClick={handleJoin}>
             Join Chat
           </button>
-          {/* <p className="hint">
-            Camera sharing requires user consent. Admin can request, user can accept or decline.
-          </p> */}
         </div>
       </div>
     );

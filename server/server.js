@@ -137,13 +137,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("request-camera", ({ to }) => {
-    const sender = users.get(socket.id);
+    const sender = sessions.get(socket.id);
     if (!sender || sender.role !== "admin" || !to) return;
     io.to(to).emit("camera-request", { from: socket.id });
   });
 
   socket.on("camera-response", ({ to, accepted }) => {
-    const sender = users.get(socket.id);
+    const sender = sessions.get(socket.id);
     if (!sender || sender.role !== "user" || !to) return;
     io.to(to).emit("camera-response", { from: socket.id, accepted: !!accepted });
   });

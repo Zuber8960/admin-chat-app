@@ -6,11 +6,29 @@ const { Server } = require("socket.io");
 const { initDb } = require("./db");
 
 const app = express();
-app.use(cors({ origin: "*" }));
+const allowedOrigins = (process.env.CORS_ORIGINS || "*")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes("*")) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("CORS blocked"), false);
+    },
+  })
+);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: {
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes("*")) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("CORS blocked"), false);
+    },
+  },
 });
 
 const sessions = new Map(); // socket.id -> { name, role, userId }

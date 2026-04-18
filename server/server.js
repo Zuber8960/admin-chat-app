@@ -70,6 +70,24 @@ function findSocketByUserId(userId) {
 }
 
 io.on("connection", (socket) => {
+  const normalizeMessage = (message) => {
+    if (typeof message === "string") {
+      return { type: "text", text: message };
+    }
+    if (!message || typeof message !== "object") return null;
+    if (message.type === "text" && typeof message.text === "string") {
+      return { type: "text", text: message.text };
+    }
+    if (message.type === "image" && typeof message.dataUrl === "string") {
+      return {
+        type: "image",
+        dataUrl: message.dataUrl,
+        name: typeof message.name === "string" ? message.name : "image",
+      };
+    }
+    return null;
+  };
+
   socket.on("register", async ({ name, role }) => {
     const safeRole = role === "admin" ? "admin" : "user";
     const safeName =
@@ -95,21 +113,22 @@ io.on("connection", (socket) => {
   socket.on("dm", async ({ to, message }) => {
     const sender = sessions.get(socket.id);
     const receiver = sessions.get(to);
-    if (!sender || !receiver || !to || typeof message !== "string") return;
+    const content = normalizeMessage(message);
+    if (!sender || !receiver || !to || !content) return;
     const ts = Date.now();
     const payload = {
       from: socket.id,
       to,
       fromUserId: sender.userId,
       toUserId: receiver.userId,
-      message,
+      message: content,
       ts,
     };
     await db.insertMessage({
       id: crypto.randomUUID(),
       fromUserId: sender.userId,
       toUserId: receiver.userId,
-      message,
+      message: JSON.stringify(content),
       ts,
     });
     io.to(to).emit("dm", payload);
@@ -125,14 +144,25 @@ io.on("connection", (socket) => {
       userB: other.userId,
       limit: 200,
     });
-    const messages = rows.map((row) => ({
-      from: findSocketByUserId(row.from_user_id),
-      to: findSocketByUserId(row.to_user_id),
-      fromUserId: row.from_user_id,
-      toUserId: row.to_user_id,
-      message: row.message,
-      ts: row.ts,
-    }));
+    const messages = rows.map((row) => {
+      let content = null;
+      try {
+        content = JSON.parse(row.message);
+      } catch {
+        content = { type: "text", text: row.message };
+      }
+      if (!content || !content.type) {
+        content = { type: "text", text: row.message };
+      }
+      return {
+        from: findSocketByUserId(row.from_user_id),
+        to: findSocketByUserId(row.to_user_id),
+        fromUserId: row.from_user_id,
+        toUserId: row.to_user_id,
+        message: content,
+        ts: row.ts,
+      };
+    });
     socket.emit("history", { with: otherSocketId, messages });
   });
 

@@ -102,9 +102,10 @@ export default function UserPanel({ socket, selfUserId, adminStatus, name }) {
     };
   }, [adminStatus.online]);
 
-  const handleSend = (text) => {
-    if (!adminIdRef.current || !text.trim()) return;
-    socket.emit("dm", { to: adminIdRef.current, message: text });
+  const handleSend = (message) => {
+    if (!adminIdRef.current) return;
+    if (message?.type === "text" && !message.text?.trim()) return;
+    socket.emit("dm", { to: adminIdRef.current, message });
   };
 
   return (

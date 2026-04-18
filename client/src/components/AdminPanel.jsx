@@ -106,9 +106,10 @@ export default function AdminPanel({ socket, selfId, selfUserId, name }) {
     socket.emit("get-history", { with: userId });
   };
 
-  const handleSend = (text) => {
-    if (!selectedUserId || !text.trim()) return;
-    socket.emit("dm", { to: selectedUserId, message: text });
+  const handleSend = (message) => {
+    if (!selectedUserId) return;
+    if (message?.type === "text" && !message.text?.trim()) return;
+    socket.emit("dm", { to: selectedUserId, message });
   };
 
   const handleRequestCamera = () => {
